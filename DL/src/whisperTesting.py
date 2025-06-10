@@ -55,7 +55,7 @@ device = "cuda"
 model = whisperx.load_model("large-v3-turbo", device)
 audio_path = "../inputFiles/CRAZY UNO REVERSE Moment…💀｜ Vijay Mallya Son ANGRY, Harsh ROAST Pakistan, Ashish REQUEST, Mythpat ｜ [NQNZeIYSRn8].mp3"
 audio = whisperx.load_audio(audio_path)
-result = model.transcribe(audio)
+result = model.transcribe(audio,language="en",task="translate")
 
 # 2. Align output
 model_a, metadata = whisperx.load_align_model(
@@ -77,11 +77,9 @@ diarize_model = whisperx.diarize.DiarizationPipeline(  # Changed to diarize subm
     device=device
 )
 diarize_segments = diarize_model(audio)
-result = whisperx.assign_word_speakers(diarize_segments, result)  # Using word-level assignment
-
+result = whisperx.assign_word_speakers(diarize_segments,result)  # Using word-level assignment
 def print_merged_transcript(segments, interval=30):
     current_window_end = interval
-    current_window_start = 0
     current_speaker = None
     current_text = []
     speaker_map = {}
@@ -90,30 +88,29 @@ def print_merged_transcript(segments, interval=30):
     for seg in sorted(segments, key=lambda x: x['start']):
         speaker = seg.get('speaker', 'UNKNOWN')
         if speaker not in speaker_map:
-            speaker_map[speaker] = f"S_{speaker_count}"
+            speaker_map[speaker] = f"S{speaker_count}"
             speaker_count += 1
         short_speaker = speaker_map[speaker]
 
+        # Merge segments within window
         if seg['start'] < current_window_end:
             if short_speaker == current_speaker:
-                current_text.append(seg['text'].strip())
+                current_text.append(seg['text'].strip('., '))
             else:
-                if current_speaker is not None:
-                    print(f"{current_speaker}: {' '.join(current_text)}")
+                if current_speaker:
+                    print(f"[{int(current_window_end-interval)}s] {current_speaker}: {' '.join(current_text)}")
                 current_speaker = short_speaker
-                current_text = [seg['text'].strip()]
+                current_text = [seg['text'].strip('., ')]
         else:
             if current_text:
-                print(f"{current_speaker}: {' '.join(current_text)}")
-            # Print the window label as [3480s]
-            print(f"\n[{int(current_window_start)}s]")
-            current_window_start = current_window_end
+                print(f"[{int(current_window_end-interval)}s] {current_speaker}: {' '.join(current_text)}")
             current_window_end += interval
             current_speaker = short_speaker
-            current_text = [seg['text'].strip()]
+            current_text = [seg['text'].strip('., ')]
 
+    # Print final segment
     if current_text:
-        print(f"{current_speaker}: {' '.join(current_text)}")
+        print(f"[{int(current_window_end-interval)}s] {current_speaker}: {' '.join(current_text)}")
 
 
 print("\nFormatted Transcript:")
