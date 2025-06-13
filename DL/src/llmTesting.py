@@ -19,7 +19,7 @@ print(f"Allocated: {torch.cuda.memory_allocated() / 1024**3:.2f} GB")
 print("======================================")
 
 # 1. Load and split document
-loader = TextLoader("../inputTextFiles/unsolicitated_advice.txt")
+loader = TextLoader("../inputTextFiles/christianity_with_labels.txt")
 documents = loader.load()
 # splitter = CharacterTextSplitter(chunk_size=128, chunk_overlap=50)
 splitter = CharacterTextSplitter(chunk_size=512, chunk_overlap=100)
@@ -52,7 +52,7 @@ print("======================================")
 print(f"Allocated: {torch.cuda.memory_allocated() / 1024**3:.2f} GB")
 print("======================================")
 
-pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, max_new_tokens=512, do_sample=True, temperature=0.7, pad_token_id=tokenizer.eos_token_id)
+pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, max_new_tokens=2048, do_sample=True, temperature=0.7, pad_token_id=tokenizer.eos_token_id)
 llm = HuggingFacePipeline(pipeline=pipe)
 
 print("======================================")
@@ -67,7 +67,7 @@ print(f"Allocated: {torch.cuda.memory_allocated() / 1024**3:.2f} GB")
 print("======================================")
 
 # 5. Query
-query = "Explain what are the 3 big ideas from this text and explain each of them in brief"
+query = "Explain what are the major talking points from this text and explain each of them in detail"
 response = qa.run(query)
 print("\nAnswer:\n", response)
 
