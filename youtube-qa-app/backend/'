@@ -1,0 +1,24 @@
+# backend/app.py
+from fastapi import FastAPI
+from pydantic import BaseModel
+from yt_utils import download_audio_from_youtube
+from whisper_utils import transcribe_audio
+from llm_utils import run_qa
+
+app = FastAPI()
+
+class YouTubeRequest(BaseModel):
+    url: str
+    question: str
+
+@app.post("/youtube-qa/")
+def youtube_qa(req: YouTubeRequest):
+    audio_file = download_audio_from_youtube(req.url)
+    transcript = transcribe_audio(audio_file)
+
+    with open("transcribed.txt", "w", encoding="utf-8") as f:
+        f.write(transcript)
+
+    answer = run_qa("transcribed.txt", req.question)
+    return {"answer": answer, "transcript": transcript}
+

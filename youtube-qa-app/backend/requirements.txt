@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+torch
+transformers
+langchain
+langchain-community
+faiss-cpu
+whisper
+yt-dlp
+
